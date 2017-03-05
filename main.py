@@ -56,6 +56,7 @@ def main():
   rct = img5.get_rect()
   g8_b = Button(rct, img5,operations)
   lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b, g8_b])
+  someshit()
   game()
 
 def append_to_bg(value):
