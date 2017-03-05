@@ -144,7 +144,7 @@ def write():
   f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
   txt = f.render(txt, True, (0,0,0,0))
   append_to_bg([txt,0,0])
-  event_buffer.append([KEYUP, append_text])
+  event_buffer.append([KEYDOWN, append_text])
   event_buffer.append([MOUSEMOTION, move_text])
 
 def move_op_text(ev = None):
@@ -199,17 +199,20 @@ def append_text(ev = None):
   global draw_left_bar
   if ev.key == K_BACKSPACE:
     bool_flag = bool_flag[0:-1]
-  elif ev.key in [K_ESCAPE, K_RETURN]:
+  elif ev.key is K_ESCAPE:
     event_buffer = []
     draw_left_bar = True
-  elif ev.key in [K_KP_PLUS,K_PLUS ]:
+  elif ev.key is K_RETURN:
+    bool_flag = ""
+    append_to_bg([None,0,0]) #gets sobstituted under, so it places and than writes another
+  elif ev.key in [K_KP_PLUS]:
     scale_format+=0.01
     f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
-  elif ev.key in [K_MINUS, K_KP_MINUS]:
+  elif ev.key in [K_KP_MINUS]:
     scale_format-=0.01
     f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
   elif ev.key in range(256):
-    bool_flag += chr(ev.key)
+    bool_flag+=ev.unicode
   background_img[-1][0] = f.render(bool_flag,True,(0,0,0,0))
   invalidate()
 
