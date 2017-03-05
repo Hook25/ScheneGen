@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 from pygame import *
 import sys
 import os
 import download_img
 import pyperclip
+from operazioni import generate
 
 default_scale_format = 0.2
 surface = None
@@ -11,12 +13,13 @@ clock = None
 lm = None
 baseres = (630,891)
 background_img = []#[image, x, y]
+particles_bg = []  #[Surface, color, rectangle, width]
 event_buffer = []
+action_buffer_for_undo = [] #here are putted the actions made in order [ACTIONDEST, rollback_funct]
 scale_format = 0.3
 piib = 0
 image_buffer = []
-particles_bg = []  #[Surface, color, rectangle, width]
-bool_flag = False
+bool_flag = False #shared variable used by various methods
 f = None  #Font
 draw_left_bar = True
 
@@ -26,6 +29,7 @@ def main():
   global clock
   global lm
   init()
+  display.set_caption("SchedeGenerator")
   screen= display.set_mode(baseres,HWSURFACE|DOUBLEBUF|RESIZABLE)
   surface = display.get_surface()
   surface.fill(Color(255,255,255,255),((0,0),baseres))
@@ -48,9 +52,35 @@ def main():
   img5 = image.load("img/download.gif")
   rct = img5.get_rect()
   g7_b = Button(rct, img5, download)
-  lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b])
+  img5 = image.load("img/operations.gif")
+  rct = img5.get_rect()
+  g8_b = Button(rct, img5,operations)
+  lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b, g8_b])
   game()
 
+def append_to_bg(value):
+  global background_img
+  action_buffer_for_undo.append([ActionDest.BACKGROUND_IMG,pop_background_img])
+  background_img.append(value)
+ 
+def pop_background_img():
+  global background_img
+  background_img.pop()  
+  invalidate()
+ 
+def operations():
+  global draw_left_bar
+  global bool_flag
+  global f
+  draw_left_bar = False
+  bool_flag =""
+  txt = str(bool_flag)
+  f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+  txt = f.render(txt, True, (0,0,0,0))
+  append_to_bg([txt,0,0])
+  event_buffer.append([KEYDOWN, edit_text_for_operations])
+  event_buffer.append([MOUSEMOTION, move_text])
+  
 def download():
   try:
     download_img.download(pyperclip.paste())
@@ -113,14 +143,54 @@ def write():
   txt = str(bool_flag)
   f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
   txt = f.render(txt, True, (0,0,0,0))
-  background_img.append([txt,0,0])
+  append_to_bg([txt,0,0])
   event_buffer.append([KEYUP, append_text])
   event_buffer.append([MOUSEMOTION, move_text])
 
+def move_op_text(ev = None):
+  return
+  
 def move_text(ev = None):
   background_img[-1][1],background_img[-1][2] = ev.pos
   invalidate()
-
+    
+def edit_text_for_operations(ev = None):  
+  global bool_flag
+  global f
+  global event_buffer
+  global scale_format
+  global draw_left_bar
+  if ev.key == K_BACKSPACE:
+    bool_flag = bool_flag[0:-1]
+  elif ev.key == K_ESCAPE:
+    event_buffer = []
+    draw_left_bar = True
+    bool_flag = ""
+    background_img.pop()
+    invalidate()
+    return
+  elif ev.key == K_RETURN:
+    operation =""
+    try:
+      operation = generate(bool_flag)
+      background_img[-1][0] = f.render(operation,True,(0,0,0,0))
+      txt = str(bool_flag)
+      f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+      txt = f.render(txt, True, (0,0,0,0))
+      append_to_bg([txt,0,0])
+    except Exception:
+      return 
+  elif ev.key in [K_KP_PLUS,K_PLUS ]:
+    scale_format+=0.01
+    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+  elif ev.key in [K_MINUS, K_KP_MINUS]:
+    scale_format-=0.01
+    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+  elif ev.key in range(256):
+    bool_flag+=ev.unicode
+  background_img[-1][0] = f.render(bool_flag,True,(0,0,0,0))
+  invalidate()
+  
 def append_text(ev = None):
   global bool_flag
   global f
@@ -172,7 +242,7 @@ def add_img():
   x,y = mouse.get_pos()
   _,_,w,h = img.get_rect()
   img = transform.scale(img, (int(w*scale_format),int(h*scale_format)))
-  background_img.append([img,x,y])
+  append_to_bg([img,x,y])
   event_buffer.append([MOUSEMOTION, adjust_pos])
   event_buffer.append([KEYUP, keypressevents])
   invalidate()
@@ -290,6 +360,8 @@ def invalidate(saving=None):
     draw.rect(rec[0],rec[1],rec[2],rec[3])
 
 def events_loop():
+  global baseres
+  global ballsack
   event.pump()
   for ev in event.get(): 
     if ev.type == QUIT:
@@ -298,8 +370,16 @@ def events_loop():
       x,y = ev.pos
       lm.clicked(x,y)
     elif ev.type==VIDEORESIZE:
-      screen=display.set_mode(ev.dict['size'],HWSURFACE|DOUBLEBUF|RESIZABLE)
+      x,y = ev.dict['size']
+      bx,by = baseres
+      y = float(by) * (float(x)/float(bx))
+      screen=display.set_mode((int(x),int(y)),HWSURFACE|DOUBLEBUF|RESIZABLE)
       invalidate()
+    elif ev.type == KEYDOWN:
+      if ev.key is K_z and key.get_mods() is KMOD_LCTRL and len(action_buffer_for_undo)>0:
+        rlback_ev = action_buffer_for_undo.pop()
+        rlback_ev[1]()
+        
     for eq in event_buffer:
         if eq[0] == ev.type:
           eq[1](ev)
@@ -353,6 +433,12 @@ class Button:
     if(self.x <= x and self.x + self.limit_x >= x and self.y <= y and self.y + self.limit_y >= y):
       self.action()
 
+class ActionDest():
+  PARTICLES =0
+  BACKGROUND_IMG = 1
+  UNDO = 3
+  DELETE = 4
+  
 main()
 
 
