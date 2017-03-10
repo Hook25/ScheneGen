@@ -5,6 +5,7 @@ import os
 import download_img
 import pyperclip
 from operazioni import generate
+from cerchietti import get_to_blit as get_cerchietti
 
 default_scale_format = 0.2
 surface = None
@@ -36,7 +37,7 @@ def main():
   load_images()
   img = image.load("img/img.gif")
   rct = img.get_rect()
-  f_b = Button(rct, img, add_img)
+  f_b = Button(rct, img, add_img) 
   img1 = image.load("img/fb.bmp")
   rct = img1.get_rect()
   s_b = Button(rct, img1, move_table)
@@ -55,8 +56,44 @@ def main():
   img5 = image.load("img/operations.gif")
   rct = img5.get_rect()
   g8_b = Button(rct, img5,operations)
-  lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b, g8_b])
+  img6 = image.load("img/cerchietti.gif")
+  rct = img6.get_rect()
+  g9_b = Button(rct, img6, cerchiett)
+  lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b, g8_b, g9_b])
   game()
+
+def cerchiett():
+  global scale_format
+  global event_buffer
+  append_to_bg([get_cerchietti(scale_format),0,0])
+  event_buffer.append([MOUSEMOTION, move_cerchietti])
+  event_buffer.append([KEYDOWN, scale_cerchietti])
+  invalidate()
+
+def scale_cerchietti(ev=None):
+  global scale_format
+  global event_buffer
+  if ev.key == K_ESCAPE:
+    background_img.pop()
+    event_buffer = []
+  elif ev.key in [K_MINUS, K_KP_MINUS]:
+    scale_format -= 0.01
+    background_img[-1][0] = get_cerchietti(scale_format)
+  elif ev.key in [K_PLUS, K_KP_PLUS]:
+    scale_format += 0.01
+    background_img[-1][0] = get_cerchietti(scale_format)
+  elif ev.key == K_RETURN:
+    append_to_bg([get_cerchietti(scale_format), 0,0])
+  elif ev.key == K_r:
+    background_img[-1][0] = get_cerchietti(scale_format)
+  invalidate()
+
+def move_cerchietti(ev=None):
+  global background_img
+  x,y = ev.pos
+  background_img[-1][1] = x
+  background_img[-1][2] = y
+  invalidate()
 
 def append_to_bg(value):
   global background_img
@@ -443,14 +480,3 @@ class ActionDest():
   DELETE = 4
   
 main()
-
-
-
-
-
-
-
-
-
-
-
