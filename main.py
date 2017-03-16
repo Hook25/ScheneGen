@@ -4,6 +4,7 @@ import sys
 import os
 import download_img
 import pyperclip
+import os.path as path
 from operazioni import generate
 from cerchietti import get_to_blit as get_cerchietti
 
@@ -23,6 +24,8 @@ image_buffer = []
 bool_flag = False #shared variable used by various methods
 f = None  #Font
 draw_left_bar = True
+lock_x = [False,0]
+lock_y = [False,0]
 
 def main():
   global screen
@@ -217,10 +220,10 @@ def edit_text_for_operations(ev = None):
       append_to_bg([txt,0,0])
     except Exception:
       return 
-  elif ev.key in [K_KP_PLUS,K_PLUS ]:
+  elif ev.key is K_KP_PLUS:
     scale_format+=0.01
     f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
-  elif ev.key in [K_MINUS, K_KP_MINUS]:
+  elif ev.key is K_KP_MINUS:
     scale_format-=0.01
     f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
   elif ev.key in range(256):
@@ -272,8 +275,9 @@ def move_cell(ev=None):
   invalidate()
 
 def load_images():
-  for file in os.listdir("img\\download"):
-    image_buffer.append(image.load("img\\download\\" + file).convert_alpha())
+  base_dir = path.join("img","download")
+  for file in os.listdir(base_dir):
+    image_buffer.append(image.load(path.join(base_dir, file)).convert_alpha())
 
 def add_img():
   global draw_left_bar
@@ -401,7 +405,8 @@ def invalidate(saving=None):
 
 def events_loop():
   global baseres
-  global ballsack
+  global lock_x
+  global lock_y
   event.pump()
   for ev in event.get(): 
     if ev.type == QUIT:
@@ -416,10 +421,14 @@ def events_loop():
       screen=display.set_mode((int(x),int(y)),HWSURFACE|DOUBLEBUF|RESIZABLE)
       invalidate()
     elif ev.type == KEYDOWN:
-      if ev.key is K_z and key.get_mods() is KMOD_LCTRL and len(action_buffer_for_undo)>0:
-        rlback_ev = action_buffer_for_undo.pop()
-        rlback_ev[1]()
-        
+      if key.get_mods() is KMOD_LCTRL:
+        if ev.key is K_z and len(action_buffer_for_undo)>0:
+          rlback_ev = action_buffer_for_undo.pop()
+          rlback_ev[1]()
+        elif ev.key is K_x:
+          lock_x[0] = not lock_x[0]
+        elif ev.key is K_y:
+          lock_y[0] = not lock_y[0]
     for eq in event_buffer:
         if eq[0] == ev.type:
           eq[1](ev)
