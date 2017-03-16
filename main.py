@@ -275,7 +275,7 @@ def move_cell(ev=None):
   invalidate()
 
 def load_images():
-  base_dir = path.join("img","download")
+  base_dir = path.join(os.path.dirname(__file__),"img","download")
   for file in os.listdir(base_dir):
     image_buffer.append(image.load(path.join(base_dir, file)).convert_alpha())
 
