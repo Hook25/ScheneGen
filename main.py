@@ -8,6 +8,7 @@ import os.path as path
 from operazioni import generate
 from cerchietti import get_to_blit as get_cerchietti
 
+base_dir = path.join(os.path.dirname(__file__),"img")
 default_scale_format = 0.2
 surface = None
 screen = None
@@ -38,28 +39,28 @@ def main():
   surface = display.get_surface()
   surface.fill(Color(255,255,255,255),((0,0),baseres))
   load_images()
-  img = image.load("img/img.gif")
+  img = image.load(path.join(base_dir,"img.gif"))
   rct = img.get_rect()
   f_b = Button(rct, img, add_img) 
-  img1 = image.load("img/fb.bmp")
+  img1 = image.load(path.join(base_dir,"fb.bmp"))
   rct = img1.get_rect()
   s_b = Button(rct, img1, move_table)
-  img2 = image.load("img/text.gif")
+  img2 = image.load(path.join(base_dir,"text.gif"))
   rct = img2.get_rect()
   t_b = Button(rct, img2, write )
-  img3 = image.load("img/save.gif")
+  img3 = image.load(path.join(base_dir,"save.gif"))
   rct = img3.get_rect()
   q_b = Button(rct, img3, save)
-  img4 = image.load("img/rubber.gif")
+  img4 = image.load(path.join(base_dir,"rubber.gif"))
   rct = img4.get_rect()
   f5_b = Button(rct, img4, delete)
-  img5 = image.load("img/download.gif")
+  img5 = image.load(path.join(base_dir,"download.gif"))
   rct = img5.get_rect()
   g7_b = Button(rct, img5, download)
-  img5 = image.load("img/operations.gif")
+  img5 = image.load(path.join(base_dir,"operations.gif"))
   rct = img5.get_rect()
   g8_b = Button(rct, img5,operations)
-  img6 = image.load("img/cerchietti.gif")
+  img6 = image.load(path.join(base_dir,"cerchietti.gif"))
   rct = img6.get_rect()
   g9_b = Button(rct, img6, cerchiett)
   lm = LeftBar([f_b,s_b,t_b,q_b,f5_b, g7_b, g8_b, g9_b])
@@ -275,9 +276,9 @@ def move_cell(ev=None):
   invalidate()
 
 def load_images():
-  base_dir = path.join(os.path.dirname(__file__),"img","download")
-  for file in os.listdir(base_dir):
-    image_buffer.append(image.load(path.join(base_dir, file)).convert_alpha())
+  global base_dir
+  for file in os.listdir(path.join(base_dir,"download")):
+    image_buffer.append(image.load(path.join(base_dir,"download", file)).convert_alpha())
 
 def add_img():
   global draw_left_bar
