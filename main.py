@@ -428,10 +428,15 @@ def events_loop():
           rlback_ev[1]()
         elif ev.key is K_x:
           lock_x[0] = not lock_x[0]
+          lock_x[1],_ = mouse.get_pos()
         elif ev.key is K_y:
           lock_y[0] = not lock_y[0]
+          _, lock_y[1] = mouse.get_pos()
     for eq in event_buffer:
         if eq[0] == ev.type:
+          if hasattr(ev,"pos"):
+            x,y = ev.pos
+            ev.pos = (x if not lock_x[0] else lock_x[1],y if not lock_y[0] else lock_y[1])
           eq[1](ev)
 
 def close():
@@ -439,6 +444,7 @@ def close():
   sys.exit()
   
 class LeftBar:
+  saving = False
   color = Color(255,0,0,255)
   modules = []
   def __init__(self, modules):
@@ -449,6 +455,7 @@ class LeftBar:
 
  #gives a position where to draw and a limit_x
   def draw(self, saving = False):
+    self.saving = saving
     if saving:
       return
     x,y = screen.get_size()
@@ -463,6 +470,8 @@ class LeftBar:
       tmp+=(h + 10)
 
   def clicked(self,x,y):
+    if self.saving:
+      return
     for m in self.modules:
       m.click(x,y)
 
