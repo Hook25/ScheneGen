@@ -116,7 +116,7 @@ def operations():
   draw_left_bar = False
   bool_flag =""
   txt = str(bool_flag)
-  f = font.Font(path.join("fonts","SquareDeal.ttf"),int(scale_format / 0.01))
+  f = get_font()
   txt = f.render(txt, True, (0,0,0,0))
   append_to_bg([txt,0,0])
   event_buffer.append([KEYDOWN, edit_text_for_operations])
@@ -182,7 +182,7 @@ def write():
   draw_left_bar = False
   bool_flag =""
   txt = str(bool_flag)
-  f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+  f = get_font()
   txt = f.render(txt, True, (0,0,0,0))
   append_to_bg([txt,0,0])
   event_buffer.append([KEYDOWN, append_text])
@@ -216,21 +216,24 @@ def edit_text_for_operations(ev = None):
       operation = generate(bool_flag)
       background_img[-1][0] = f.render(operation,True,(0,0,0,0))
       txt = str(bool_flag)
-      f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+      f = get_font()
       txt = f.render(txt, True, (0,0,0,0))
       append_to_bg([txt,0,0])
     except Exception:
       return 
   elif ev.key is K_KP_PLUS:
     scale_format+=0.01
-    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+    f = get_font()
   elif ev.key is K_KP_MINUS:
     scale_format-=0.01
-    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+    f = get_font()
   elif ev.key in range(256):
     bool_flag+=ev.unicode
   background_img[-1][0] = f.render(bool_flag,True,(0,0,0,0))
   invalidate()
+
+def get_font():
+  return font.Font(path.join(base_dir,"..","fonts","SquareDeal.ttf"),int(scale_format / 0.01))
   
 def append_text(ev = None):
   global bool_flag
@@ -248,10 +251,10 @@ def append_text(ev = None):
     append_to_bg([None,0,0]) #gets sobstituted under, so it places and than writes another
   elif ev.key in [K_KP_PLUS]:
     scale_format+=0.01
-    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+    f = get_font()
   elif ev.key in [K_KP_MINUS]:
     scale_format-=0.01
-    f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+    f = get_font() 
   elif ev.key in range(256):
     bool_flag+=ev.unicode
   background_img[-1][0] = f.render(bool_flag,True,(0,0,0,0))
