@@ -116,7 +116,7 @@ def operations():
   draw_left_bar = False
   bool_flag =""
   txt = str(bool_flag)
-  f = font.Font("fonts/SquareDeal.ttf",int(scale_format / 0.01))
+  f = font.Font(path.join("fonts","SquareDeal.ttf"),int(scale_format / 0.01))
   txt = f.render(txt, True, (0,0,0,0))
   append_to_bg([txt,0,0])
   event_buffer.append([KEYDOWN, edit_text_for_operations])
